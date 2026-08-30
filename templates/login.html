@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spider Tutor — Log in</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+        body {
+            font-family: "Inter", sans-serif;
+            background: #f7f7f5;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+        }
+
+        .login-card {
+            background: #ffffff;
+            border-radius: 14px;
+            box-shadow: 0 4px 24px rgba(0, 0, 0, 0.08);
+            padding: 40px 40px 36px;
+            width: 100%;
+            max-width: 380px;
+        }
+
+        /* Logo block */
+        .login-logo {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-bottom: 32px;
+        }
+
+        .login-spider-box {
+            width: 48px;
+            height: 48px;
+            background: #990000;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
+        .login-app-name {
+            font-size: 18px;
+            font-weight: 700;
+            color: #122851;
+            line-height: 1.2;
+        }
+
+        .login-university {
+            font-size: 12px;
+            color: #9ca3af;
+            margin-top: 3px;
+        }
+
+        /* Error banner */
+        .login-error {
+            background: #fff5f5;
+            border: 1px solid #fca5a5;
+            color: #991b1b;
+            font-size: 13px;
+            font-weight: 500;
+            padding: 10px 14px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        /* Form fields */
+        .login-field {
+            margin-bottom: 16px;
+        }
+
+        .login-field label {
+            display: block;
+            font-size: 13px;
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 6px;
+        }
+
+        .login-field input {
+            width: 100%;
+            padding: 10px 13px;
+            border: 1.5px solid #d1d5db;
+            border-radius: 8px;
+            font-family: "Inter", sans-serif;
+            font-size: 14px;
+            color: #1a1a1a;
+            transition: border-color 0.15s;
+            outline: none;
+        }
+
+        .login-field input:focus {
+            border-color: #122851;
+        }
+
+        /* Submit button */
+        .login-btn {
+            display: block;
+            width: 100%;
+            margin-top: 24px;
+            padding: 11px;
+            background: #990000;
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            font-family: "Inter", sans-serif;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.15s;
+        }
+
+        .login-btn:hover { background: #7a0000; }
+        .login-btn:focus-visible { outline: 3px solid #122851; outline-offset: 2px; }
+
+        .login-switch {
+            text-align: center;
+            font-size: 13px;
+            color: #6b7280;
+            margin-top: 20px;
+        }
+
+        .login-switch a {
+            color: #122851;
+            font-weight: 500;
+            text-decoration: none;
+        }
+
+        .login-switch a:hover { text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="login-logo">
+            <div class="login-spider-box">
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+                    <circle cx="12" cy="12" r="3" fill="white"/>
+                    <line x1="12" y1="9"  x2="12" y2="2"  stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="12" y1="15" x2="12" y2="22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="9"  y1="10.5" x2="3"  y2="7"  stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="15" y1="13.5" x2="21" y2="17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="9"  y1="13.5" x2="3"  y2="17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                    <line x1="15" y1="10.5" x2="21" y2="7"  stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <span class="login-app-name">Spider Tutor</span>
+            <span class="login-university">University of Richmond</span>
+        </div>
+
+        {% if error %}
+        <div class="login-error">{{ error }}</div>
+        {% endif %}
+
+        <form method="POST" action="/login">
+            <div class="login-field">
+                <label for="username">Username</label>
+                <input type="text" id="username" name="username" required autofocus autocomplete="username">
+            </div>
+            <div class="login-field">
+                <label for="password">Password</label>
+                <input type="password" id="password" name="password" required autocomplete="current-password">
+            </div>
+            <button type="submit" class="login-btn">Log in</button>
+        </form>
+
+        <p class="login-switch">Don't have an account? <a href="/signup">Sign up</a></p>
+    </div>
+</body>
+</html>
