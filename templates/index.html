@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Study Tutor</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$']],
+                displayMath: [['$$', '$$']]
+            },
+            startup: {
+                typeset: false
+            }
+        };
+    </script>
+    <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml.js"></script>
+</head>
+<body>
+    <div class="app">
+
+        <!-- ── Sidebar ── -->
+        <aside class="sidebar">
+            <div class="sidebar-logo">
+                <div style="width: 40px; height: 40px; background: #990000; border-radius: 8px; display: flex; align-items: center; justify-content: center; margin-bottom: 10px;">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+                        <circle cx="12" cy="12" r="3" fill="white"/>
+                        <line x1="12" y1="9" x2="12" y2="2" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="12" y1="15" x2="12" y2="22" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="9" y1="10.5" x2="3" y2="7" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="15" y1="13.5" x2="21" y2="17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="9" y1="13.5" x2="3" y2="17" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                        <line x1="15" y1="10.5" x2="21" y2="7" stroke="white" stroke-width="1.5" stroke-linecap="round"/>
+                    </svg>
+                </div>
+                <span class="sidebar-logo-name">Spider Tutor</span>
+                <span class="sidebar-logo-sub">University of Richmond</span>
+            </div>
+            <div class="sidebar-user">
+                <span class="sidebar-username">{{ session.get('username') }}</span>
+                <a href="/logout" class="sidebar-logout">Log out</a>
+            </div>
+            <nav class="sidebar-nav">
+                <button class="nav-item active" data-tab="notes">
+                    <i class="ti ti-file-text"></i>
+                    Create Notes
+                </button>
+                <button class="nav-item" data-tab="socratic">
+                    <i class="ti ti-messages"></i>
+                    Socratic Q&amp;A
+                </button>
+                <button class="nav-item" data-tab="quiz">
+                    <i class="ti ti-brain"></i>
+                    Quiz Me
+                </button>
+                <button class="nav-item" data-tab="progress">
+                    <i class="ti ti-chart-line"></i> Progress
+                </button>
+                <div class="nav-label" style="margin-top: 16px;">Subjects</div>
+                <div id="sidebar-subjects"></div>
+            </nav>
+            <button id="sidebar-toggle">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2.5" stroke-linecap="round">
+                    <polyline points="15 18 9 12 15 6"></polyline>
+                </svg>
+            </button>
+        </aside>
+
+        <!-- ── Main content ── -->
+        <main class="main">
+
+            <!-- Create Notes panel -->
+            <div id="panel-notes" class="panel">
+                <div class="card">
+                    <div class="notes-upload-container">
+                        <h1 style="font-size: 22px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px;">Create Notes</h1>
+                        <p style="font-size: 14px; color: #6b7280; margin-bottom: 28px;">Upload a PDF or document to generate structured study notes.</p>
+                        <form id="upload-form">
+                            <div class="drop-zone" id="drop-zone">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
+                                    <polyline points="16 16 12 12 8 16"></polyline>
+                                    <line x1="12" y1="12" x2="12" y2="21"></line>
+                                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+                                </svg>
+                                <span class="drop-zone-label">Drag &amp; drop a file here, or click to browse</span>
+                                <input type="file" id="file-input" name="file" accept=".pdf,.txt,.docx">
+                            </div>
+                            <button type="submit" id="generate-btn">Generate Notes</button>
+                        </form>
+                    </div>
+                    <div id="notes-output"></div>
+                    <button id="download-notes-btn" style="
+                        display: none;
+                        align-items: center;
+                        gap: 8px;
+                        margin-top: 16px;
+                        padding: 10px 20px;
+                        background: #122851;
+                        color: #ffffff;
+                        border: none;
+                        border-radius: 8px;
+                        font-size: 14px;
+                        font-weight: 500;
+                        cursor: pointer;
+                    ">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+                            <polyline points="7 10 12 15 17 10"></polyline>
+                            <line x1="12" y1="15" x2="12" y2="3"></line>
+                        </svg>
+                        <span id="download-notes-label">Download Study Notes</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Socratic Q&A panel -->
+            <div id="panel-socratic" class="panel hidden">
+                <div class="card">
+
+                    <!-- Setup state -->
+                    <div id="socratic-setup">
+                        <div class="notes-upload-container">
+                            <h1 style="font-size: 22px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px;">Socratic Q&A</h1>
+                            <p style="font-size: 14px; color: #6b7280; margin-bottom: 28px;">Upload your notes or a document to start an interactive Q&A session.</p>
+                            <div class="drop-zone" id="socratic-drop-zone">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
+                                    <polyline points="16 16 12 12 8 16"></polyline>
+                                    <line x1="12" y1="12" x2="12" y2="21"></line>
+                                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+                                </svg>
+                                <span class="drop-zone-label">Drag &amp; drop a file here, or click to browse</span>
+                                <input type="file" id="socratic-file-input" name="file" accept=".pdf,.txt,.docx">
+                            </div>
+                            <div class="quiz-setup-row">
+                                <button id="start-socratic-btn">Start Socratic Session</button>
+                                <span id="socratic-loading-text" class="hidden quiz-loading">
+                                    <span class="quiz-spinner"></span>Building session…
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Active session (hidden until loaded) -->
+                    <div id="socratic-active" class="hidden">
+
+                        <!-- Progress -->
+                        <div class="flashcard-progress">
+                            Goal <span id="soc-goal-current"></span> of <span id="soc-goal-total"></span>
+                            &nbsp;·&nbsp;
+                            <span id="soc-q-label"></span>
+                        </div>
+
+                        <!-- Goal context header -->
+                        <div id="socratic-goal-header" class="socratic-goal-header">
+                            <span class="socratic-goal-badge">Goal <span id="soc-goal-badge-num"></span></span>
+                            <p id="soc-goal-title"></p>
+                        </div>
+
+                        <!-- State: Question -->
+                        <div id="socratic-question-state">
+                            <div class="flashcard-card">
+                                <p id="soc-question-text"></p>
+                                <div id="soc-answer" class="hidden">
+                                    <p id="soc-answer-text"></p>
+                                </div>
+                                <div class="flashcard-actions">
+                                    <button id="soc-reveal-btn">Reveal Answer</button>
+                                    <button id="soc-next-btn" class="hidden">Next Question</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- State: Insight (shown after last Q of a goal) -->
+                        <div id="socratic-insight-state" class="hidden">
+                            <div class="socratic-insight-card">
+                                <div class="socratic-insight-label">Key Insight</div>
+                                <p id="soc-insight-text"></p>
+                            </div>
+                            <button id="soc-next-goal-btn">Next Goal →</button>
+                        </div>
+
+                        <!-- State: Done (after all goals) -->
+                        <div id="socratic-done-state" class="hidden">
+                            <div class="socratic-done-card">
+                                <p>You've worked through all learning goals. Great work!</p>
+                            </div>
+                            <button id="soc-restart-btn">Start New Session</button>
+                        </div>
+
+                    </div><!-- /socratic-active -->
+                </div>
+            </div>
+
+            <!-- Quiz Me panel -->
+            <div id="panel-quiz" class="panel hidden">
+                <div class="card">
+
+                    <!-- State 1: Setup -->
+                    <div id="quiz-setup">
+                        <div class="notes-upload-container">
+                            <h1 style="font-size: 22px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px;">Quiz Me</h1>
+                            <p style="font-size: 14px; color: #6b7280; margin-bottom: 28px;">Upload your notes or a document to generate a practice quiz.</p>
+                            <div class="drop-zone" id="quiz-drop-zone">
+                                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="pointer-events: none;">
+                                    <polyline points="16 16 12 12 8 16"></polyline>
+                                    <line x1="12" y1="12" x2="12" y2="21"></line>
+                                    <path d="M20.39 18.39A5 5 0 0 0 18 9h-1.26A8 8 0 1 0 3 16.3"></path>
+                                </svg>
+                                <span class="drop-zone-label">Drag &amp; drop a file here, or click to browse</span>
+                                <input type="file" id="quiz-file-input" name="file" accept=".pdf,.txt,.docx">
+                            </div>
+                            <div class="quiz-setup-row">
+                                <button id="start-quiz-btn">Start Quiz</button>
+                                <span id="quiz-loading-text" class="hidden quiz-loading">
+                                    <span class="quiz-spinner"></span>Generating questions…
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- States 2 & 3 & results: hidden until quiz loads -->
+                    <div id="quiz-active" class="hidden">
+
+                        <!-- Stat cards -->
+                        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; max-width: 600px; width: 100%; margin: 0 auto 28px auto;">
+                            <div style="background: #ffffff; border: 0.5px solid #e5e7eb; border-radius: 8px; padding: 14px 16px;">
+                                <div style="font-size: 11px; color: #9ca3af; margin-bottom: 4px;">Correct</div>
+                                <div id="quiz-stat-correct" style="font-size: 22px; font-weight: 500; color: #1D9E75;">0</div>
+                                <div id="quiz-stat-of" style="font-size: 11px; color: #9ca3af; margin-top: 1px;">of 0 answered</div>
+                            </div>
+                            <div style="background: #ffffff; border: 0.5px solid #e5e7eb; border-radius: 8px; padding: 14px 16px;">
+                                <div style="font-size: 11px; color: #9ca3af; margin-bottom: 4px;">Streak</div>
+                                <div id="quiz-stat-streak" style="font-size: 22px; font-weight: 500; color: #1a1a1a;">🔥 0</div>
+                                <div style="font-size: 11px; color: #9ca3af; margin-top: 1px;">in a row</div>
+                            </div>
+                            <div style="background: #ffffff; border: 0.5px solid #e5e7eb; border-radius: 8px; padding: 14px 16px;">
+                                <div style="font-size: 11px; color: #9ca3af; margin-bottom: 4px;">Remaining</div>
+                                <div id="quiz-stat-remaining" style="font-size: 22px; font-weight: 500; color: #990000;">0</div>
+                                <div style="font-size: 11px; color: #9ca3af; margin-top: 1px;">questions left</div>
+                            </div>
+                        </div>
+
+                        <!-- Shared progress bar -->
+                        <div class="quiz-progress-wrap">
+                            <span class="quiz-progress-label">Question <span id="quiz-q-current"></span> of <span id="quiz-q-total"></span></span>
+                            <div class="quiz-progress-track">
+                                <div id="quiz-progress-fill" class="quiz-progress-fill"></div>
+                            </div>
+                        </div>
+
+                        <!-- State 2: Question view -->
+                        <div id="quiz-question-state">
+                            <button id="back-to-main-quiz" class="hidden" style="display: flex; align-items: center; gap: 6px; background: none; border: none; color: #122851; font-size: 14px; font-weight: 500; cursor: pointer; padding: 0; margin-bottom: 20px;">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#122851" stroke-width="2.5" stroke-linecap="round">
+                                    <polyline points="15 18 9 12 15 6"></polyline>
+                                </svg>
+                                Back to Main Quiz
+                            </button>
+                            <div id="followup-original-question" class="hidden" style="background: #fff8f8; border: 1px solid #f5c4c4; border-radius: 8px; padding: 12px 16px; margin-bottom: 20px; font-size: 13px;">
+                                <div style="color: #990000; font-weight: 600; font-size: 11px; letter-spacing: 0.05em; text-transform: uppercase; margin-bottom: 6px;">Original missed question</div>
+                                <div style="color: #333; line-height: 1.5;" id="original-missed-question-text"></div>
+                            </div>
+                            <span id="quiz-type-badge" class="quiz-type-badge"></span>
+                            <div class="quiz-question-box">
+                                <p id="quiz-question-text"></p>
+                            </div>
+                            <textarea id="quiz-answer-input" placeholder="Type your answer here…" rows="4"></textarea>
+                            <div class="quiz-setup-row">
+                                <div id="streak-dots" style="display: flex; align-items: center; gap: 5px; margin-right: auto;"></div>
+                                <button id="submit-answer-btn">Submit Answer</button>
+                                <span id="quiz-grading-text" class="hidden quiz-loading">
+                                    <span class="quiz-spinner"></span>Grading…
+                                </span>
+                            </div>
+                        </div>
+
+                        <!-- State 3: Feedback view -->
+                        <div id="quiz-feedback-state" class="hidden">
+                            <span id="quiz-fb-type-badge" class="quiz-type-badge"></span>
+                            <div class="quiz-question-box">
+                                <p id="quiz-fb-question-text"></p>
+                            </div>
+                            <div class="quiz-student-answer">
+                                <p id="quiz-student-answer-text"></p>
+                            </div>
+                            <div id="quiz-feedback-box" class="quiz-feedback-box">
+                                <p id="quiz-analysis-text"></p>
+                            </div>
+                            <ul id="quiz-rubric-list" class="quiz-rubric-list"></ul>
+                            <div id="quiz-true-answer-box" class="hidden quiz-true-answer-box">
+                                <p id="quiz-true-answer-text"></p>
+                            </div>
+                            <div class="flashcard-actions">
+                                <button id="quiz-next-btn">Next Question</button>
+                                <button id="quiz-see-answer-btn">See Full Answer</button>
+                                <button id="quiz-followup-btn" disabled>Follow-Up Questions</button>
+                                <button id="back-to-main-from-result" class="hidden" style="display: flex; align-items: center; gap: 6px; background: none; border: 1.5px solid #122851; color: #122851; font-size: 15px; font-weight: 500; padding: 10px 20px; border-radius: 8px; cursor: pointer;">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#122851" stroke-width="2.5" stroke-linecap="round">
+                                        <polyline points="15 18 9 12 15 6"></polyline>
+                                    </svg>
+                                    Back to Main Quiz
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- State 4: Results -->
+                        <div id="quiz-results-state" class="hidden">
+                            <div class="quiz-results-box">
+                                <p id="quiz-score-text" class="quiz-score-text"></p>
+                            </div>
+                            <p id="quiz-no-subject-hint" class="hidden" style="font-size:13px;color:#9ca3af;margin:-4px 0 16px;">
+                                No subject selected, so this result wasn't added to Progress. Upload notes to create one, or pick a subject in the sidebar.
+                            </p>
+                            <!-- Weak-performance banner: shown when accuracy < 40%. -->
+                            <div id="quiz-weak-banner" class="hidden quiz-weak-banner">
+                                <div class="quiz-weak-icon">⚠</div>
+                                <div class="quiz-weak-body">
+                                    <strong>Weak performance detected</strong>
+                                    <p>Your accuracy dropped below 40%. Reinforcing your notes below targets the concepts you missed.</p>
+                                </div>
+                            </div>
+                            <p id="quiz-all-correct-msg" class="hidden quiz-all-correct-msg">
+                                All correct — your notes are already up to date.
+                            </p>
+                            <div id="quiz-notes-update-wrap" class="hidden">
+                                <button id="quiz-update-notes-btn">Update Notes</button>
+                                <div id="quiz-notes-update-status" class="hidden quiz-notes-update-status">
+                                    <p id="quiz-notes-update-text"></p>
+                                    <a id="quiz-view-notes-link" href="#" class="hidden quiz-view-notes-link">View Updated Notes →</a>
+                                </div>
+                            </div>
+                            <button id="quiz-restart-btn">Start New Quiz</button>
+                        </div>
+
+                    </div><!-- /quiz-active -->
+                </div>
+            </div>
+
+            <!-- Course page panel — content rendered by renderCoursePage() in script.js -->
+            <div id="panel-course" class="panel hidden">
+                <div id="course-page-content"></div>
+            </div>
+
+            <!-- Progress panel -->
+            <div id="panel-progress" class="panel hidden">
+                <div class="progress-page">
+
+                    <div style="margin-bottom: 24px;">
+                        <h1 style="font-size: 22px; font-weight: 600; color: #1a1a1a; margin-bottom: 6px;">Progress</h1>
+                        <p style="font-size: 14px; color: #6b7280;">Track your streaks and achievements across subjects.</p>
+                    </div>
+
+                    <!-- Subject switcher -->
+                    <div class="prog-course-switcher" id="prog-subject-switcher"></div>
+
+                    <!-- Empty state: no subjects created yet -->
+                    <div id="prog-empty-state" class="cpage-empty hidden" style="margin-top: 8px;">
+                        <p>Upload notes to create your first subject.</p>
+                    </div>
+
+                    <div id="prog-content">
+                        <!-- Stats bar -->
+                        <div class="prog-stats-row">
+                            <div class="prog-stat-card">
+                                <div class="prog-stat-icon" id="prog-streak-icon">🔥</div>
+                                <div class="prog-stat-info">
+                                    <div class="prog-stat-number" id="prog-streak-val">0</div>
+                                    <div class="prog-stat-label">day streak</div>
+                                </div>
+                            </div>
+                            <div class="prog-stat-card">
+                                <div class="prog-stat-icon">🏆</div>
+                                <div class="prog-stat-info">
+                                    <div class="prog-stat-number" id="prog-longest-val">0</div>
+                                    <div class="prog-stat-label">best streak</div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Accuracy chart -->
+                        <div class="prog-section">
+                            <h2 class="prog-section-title">Accuracy Over Time</h2>
+                            <div class="prog-chart-container">
+                                <svg id="prog-chart" style="width: 100%; height: 200px; display: block;"></svg>
+                            </div>
+                        </div>
+
+                        <!-- Achievements -->
+                        <div class="prog-section">
+                            <h2 class="prog-section-title">Achievements</h2>
+                            <div class="prog-badges" id="prog-badges"></div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- Subject name confirmation modal (shown after Create Notes generates notes) -->
+            <div id="subject-confirm-modal" class="modal-overlay hidden">
+                <div class="modal-box">
+                    <h2 class="modal-title">Name this subject</h2>
+                    <p class="modal-subtitle" id="subject-modal-subtitle">Suggested from your notes — edit if you'd like, then confirm.</p>
+                    <input type="text" id="subject-name-input" placeholder="e.g. Intro Microeconomics" autocomplete="off">
+
+                    <div id="subject-match-notice" class="modal-match-notice hidden">
+                        <p>This looks similar to an existing subject: <strong id="subject-match-name"></strong>. Use it, or create a new one?</p>
+                        <div class="modal-match-actions">
+                            <button id="subject-use-existing-btn" type="button">Use "<span id="subject-match-name-2"></span>"</button>
+                            <button id="subject-make-new-btn" type="button" class="modal-secondary-btn">Create new anyway</button>
+                        </div>
+                    </div>
+
+                    <div class="modal-actions">
+                        <button id="subject-confirm-btn" type="button">Confirm</button>
+                        <button id="subject-skip-btn" type="button" class="modal-secondary-btn">Skip</button>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="{{ url_for('static', filename='progress.js') }}"></script>
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+</html>
